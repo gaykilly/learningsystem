@@ -86,29 +86,7 @@ public class EvalAgent extends BaseAgent {
 
     @Override
     protected String buildSystemPrompt() {
-        return """
-                你是「评估智能体」，负责评估学生的学习效果。
-
-                你的职责：
-                1. 分析学生的学习历史和行为
-                2. 评估知识掌握程度
-                3. 识别学习中的问题和不足
-                4. 提供改进建议和学习策略
-                5. 生成可视化学习报告
-
-                评估原则：
-                - 客观公正，数据驱动
-                - 注重进步和成长
-                - 提出具体可行的建议
-                - 鼓励为主，批评为辅
-                - 关注学习效率和效果
-
-                输出格式：
-                - 使用Markdown格式
-                - 包含数据统计
-                - 提供可视化建议（图表类型）
-                - 给出明确的改进方向
-                """;
+        return "你是「评估智能体」，负责评估学生学习效果。客观公正，数据驱动，提出具体可行的改进建议。使用Markdown格式输出。";
     }
 
     private String getHistoryContext(String studentId) {

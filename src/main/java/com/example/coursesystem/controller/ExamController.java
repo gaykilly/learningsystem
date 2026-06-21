@@ -79,8 +79,8 @@ public class ExamController {
             @RequestParam String courseName,
             @RequestParam(defaultValue = "20") int questionCount) {
         // 使用ResourceAgent的流式能力
-        return Flux.fromCallable(() -> examService.generateMockExam(studentId, courseName, questionCount))
-            .flatMap(content -> Flux.fromArray(content.split("(?<=\\n)")));
+        String content = examService.generateMockExam(studentId, courseName, questionCount);
+        return Flux.fromArray(content.split("(?<=\\n)"));
     }
 
     /**

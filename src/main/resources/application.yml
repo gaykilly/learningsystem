@@ -19,8 +19,9 @@ spring:
       hibernate:
         format_sql: true
 
-# 通义千问 AI 配置
-dashscope:
-  api-key: ${DASHSCOPE_API_KEY:your-api-key-here}
-  model: "qwen-turbo"
+# MiMo AI 配置
+mimo:
+  api-key: ${MIMO_API_KEY:sk-ct2s6r2yulpp9kle3sy7o8x4zqui468pxyvlbb9lba40typ8}
+  base-url: "https://api.xiaomimimo.com"
+  model: "mimo-v2.5-pro"
 

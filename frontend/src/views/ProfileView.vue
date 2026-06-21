@@ -186,14 +186,14 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  background: var(--bg-hover, #f5f7fa);
+  border-radius: 10px;
 }
 
 .dimension-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -203,13 +203,13 @@ onMounted(() => {
 .dimension-info h4 {
   margin: 0 0 4px 0;
   font-size: 14px;
-  color: #606266;
+  color: var(--text-secondary, #606266);
 }
 
 .dimension-info p {
   margin: 0;
   font-size: 16px;
-  color: #303133;
+  color: var(--text-primary, #303133);
   font-weight: 500;
 }
 

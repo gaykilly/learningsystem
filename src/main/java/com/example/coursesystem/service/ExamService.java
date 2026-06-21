@@ -54,8 +54,8 @@ public class ExamService {
         if (record.getKnowledgeTags() == null) return;
 
         String[] tags = record.getKnowledgeTags().split(",");
-        for (String tag : tags) {
-            tag = tag.trim();
+        for (String rawTag : tags) {
+            String tag = rawTag.trim();
             if (tag.isEmpty()) continue;
 
             KnowledgeMastery mastery = masteryRepository

@@ -190,7 +190,7 @@ onMounted(() => {
 }
 
 .path-desc {
-  color: #606266;
+  color: var(--text-secondary, #606266);
   margin-bottom: 24px;
   line-height: 1.6;
 }
@@ -216,17 +216,17 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  background: var(--bg-hover, #f5f7fa);
+  border-radius: 10px;
 }
 
 .resource-name {
   font-weight: 500;
-  color: #303133;
+  color: var(--text-primary, #303133);
 }
 
 .resource-reason {
-  color: #909399;
+  color: var(--text-muted, #909399);
   font-size: 13px;
 }
 </style>

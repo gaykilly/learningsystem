@@ -62,24 +62,7 @@ public class ResourceAgent extends BaseAgent {
 
     @Override
     protected String buildSystemPrompt() {
-        return """
-                你是「资源智能体」，负责生成高质量的学习资源。
-
-                你的能力：
-                1. 生成教学大纲 - 包含课程目标、章节内容、考核方式等
-                2. 生成PPT大纲 - 结构化的课件内容框架
-                3. 生成练习题 - 选择题、填空题、简答题等
-                4. 生成思维导图 - 知识点层级结构
-                5. 生成复习提纲 - 核心考点总结
-
-                生成要求：
-                - 根据学生画像调整内容难度和风格
-                - 视觉型学生：多用图表、结构化展示
-                - 听觉型学生：多用解释性文字、案例
-                - 实践型学生：多用代码示例、实操案例
-                - 内容准确、结构清晰、格式规范
-                - 使用Markdown格式输出
-                """;
+        return "你是「资源智能体」，负责生成高质量学习资源（教学大纲、PPT、练习题、思维导图、复习提纲）。根据学生画像调整难度，内容准确结构清晰，使用Markdown格式输出。";
     }
 
     private String buildResourcePrompt(String type, String topic, String profileContext) {

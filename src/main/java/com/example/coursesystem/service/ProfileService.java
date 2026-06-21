@@ -128,31 +128,15 @@ public class ProfileService {
     public String getProfileContext(String studentId) {
         Optional<StudentProfile> opt = profileRepository.findByStudentId(studentId);
         if (opt.isEmpty()) {
-            return "暂无学生画像信息";
+            return "";
         }
 
         StudentProfile p = opt.get();
-        return String.format("""
-                学生画像：
-                - 姓名：%s
-                - 专业：%s
-                - 年级：%s
-                - 知识基础：%s
-                - 认知风格：%s
-                - 学习偏好：%s
-                - 易错点：%s
-                - 学习目标：%s
-                - 学习进度：%s
-                """,
-                p.getStudentName(),
-                p.getMajor(),
-                p.getGrade(),
-                p.getKnowledgeLevel(),
-                p.getCognitiveStyle(),
-                p.getLearningPreference(),
-                p.getWeakPoints(),
-                p.getLearningGoal(),
-                p.getLearningProgress()
-        );
+        StringBuilder sb = new StringBuilder();
+        if (p.getMajor() != null) sb.append(p.getMajor());
+        if (p.getGrade() != null) sb.append(" ").append(p.getGrade());
+        if (p.getKnowledgeLevel() != null) sb.append("，基础：").append(p.getKnowledgeLevel());
+        if (p.getWeakPoints() != null && !"待发现".equals(p.getWeakPoints())) sb.append("，薄弱点：").append(p.getWeakPoints());
+        return sb.length() > 0 ? "学生背景：" + sb : "";
     }
 }

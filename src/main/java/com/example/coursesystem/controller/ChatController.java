@@ -1,7 +1,9 @@
 package com.example.coursesystem.controller;
 
 import com.example.coursesystem.agent.*;
+import com.example.coursesystem.entity.ChatSession;
 import com.example.coursesystem.entity.LearningHistory;
+import com.example.coursesystem.repository.ChatSessionRepository;
 import com.example.coursesystem.repository.LearningHistoryRepository;
 import com.example.coursesystem.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 对话控制器 - 处理与学生的对话交互
@@ -40,6 +46,9 @@ public class ChatController {
     @Autowired
     private LearningHistoryRepository historyRepository;
 
+    @Autowired
+    private ChatSessionRepository sessionRepository;
+
     /**
      * 流式对话接口
      */
@@ -51,9 +60,6 @@ public class ChatController {
 
         String context = "studentId:" + studentId + ";";
 
-        // 保存学习历史
-        saveHistory(studentId, "chat", message);
-
         BaseAgent agent = getAgent(agentType);
         return agent.processStream(message, context);
     }
@@ -62,23 +68,41 @@ public class ChatController {
      * 非流式对话接口
      */
     @PostMapping("/send")
-    public String sendMessage(@RequestBody Map<String, String> request) {
+    public Map<String, Object> sendMessage(@RequestBody Map<String, String> request) {
         String message = request.get("message");
         String studentId = request.getOrDefault("studentId", "default");
         String agentType = request.getOrDefault("agentType", "tutor");
+        String sessionId = request.get("sessionId");
+
+        // 如果没有sessionId，创建新会话
+        if (sessionId == null || sessionId.isEmpty()) {
+            sessionId = UUID.randomUUID().toString().replace("-", "");
+            ChatSession session = new ChatSession();
+            session.setSessionId(sessionId);
+            session.setStudentId(studentId);
+            session.setTitle(message.length() > 30 ? message.substring(0, 30) + "..." : message);
+            session.setAgentType(agentType);
+            sessionRepository.save(session);
+        }
 
         String context = "studentId:" + studentId + ";";
-
-        // 保存学习历史
-        saveHistory(studentId, "chat", message);
 
         BaseAgent agent = getAgent(agentType);
         String response = agent.process(message, context);
 
-        // 更新画像
-        profileService.updateProfileFromChat(studentId, message);
+        // 保存对话记录
+        saveHistory(studentId, "chat", message, response, agentType, sessionId);
 
-        return response;
+        // 更新会话时间和标题
+        sessionRepository.findBySessionId(sessionId).ifPresent(session -> {
+            session.setUpdateTime(java.time.LocalDateTime.now());
+            sessionRepository.save(session);
+        });
+
+        // 异步更新画像
+        new Thread(() -> profileService.updateProfileFromChat(studentId, message)).start();
+
+        return Map.of("response", response, "sessionId", sessionId);
     }
 
     /**
@@ -95,6 +119,43 @@ public class ChatController {
         );
     }
 
+    /**
+     * 获取会话列表
+     */
+    @GetMapping("/sessions")
+    public List<ChatSession> getSessions(
+            @RequestParam(defaultValue = "student_001") String studentId) {
+        return sessionRepository.findByStudentIdOrderByUpdateTimeDesc(studentId);
+    }
+
+    /**
+     * 获取会话内的所有消息
+     */
+    @GetMapping("/session/{sessionId}/messages")
+    public List<LearningHistory> getSessionMessages(@PathVariable String sessionId) {
+        return historyRepository.findBySessionIdOrderByCreateTimeAsc(sessionId);
+    }
+
+    /**
+     * 删除会话
+     */
+    @Transactional
+    @DeleteMapping("/session/{sessionId}")
+    public Map<String, String> deleteSession(@PathVariable String sessionId) {
+        historyRepository.deleteBySessionId(sessionId);
+        sessionRepository.deleteBySessionId(sessionId);
+        return Map.of("status", "ok");
+    }
+
+    /**
+     * 获取对话历史（兼容旧接口）
+     */
+    @GetMapping("/history")
+    public List<LearningHistory> getChatHistory(
+            @RequestParam(defaultValue = "student_001") String studentId) {
+        return historyRepository.findByStudentIdAndTypeOrderByCreateTimeDesc(studentId, "chat");
+    }
+
     private BaseAgent getAgent(String agentType) {
         return switch (agentType) {
             case "profile" -> profileAgent;
@@ -105,12 +166,15 @@ public class ChatController {
         };
     }
 
-    private void saveHistory(String studentId, String type, String content) {
+    private void saveHistory(String studentId, String type, String content, String response, String agentType, String sessionId) {
         try {
             LearningHistory history = new LearningHistory();
             history.setStudentId(studentId);
             history.setType(type);
             history.setContent(content);
+            history.setResponse(response);
+            history.setKnowledgeTags(agentType);
+            history.setSessionId(sessionId);
             historyRepository.save(history);
         } catch (Exception e) {
             e.printStackTrace();

@@ -179,9 +179,9 @@ onMounted(() => {
 .knowledge-item {
   padding: 16px;
   margin-bottom: 12px;
-  background: #f5f7fa;
-  border-radius: 8px;
-  border-left: 4px solid #409EFF;
+  background: var(--bg-hover, #f5f7fa);
+  border-radius: 10px;
+  border-left: 4px solid #722ed1;
 }
 
 .knowledge-header {
@@ -193,18 +193,18 @@ onMounted(() => {
 
 .knowledge-no {
   font-weight: 500;
-  color: #409EFF;
+  color: #722ed1;
 }
 
 .knowledge-name {
   font-size: 16px;
   font-weight: 500;
-  color: #303133;
+  color: var(--text-primary, #303133);
   flex: 1;
 }
 
 .knowledge-content {
-  color: #606266;
+  color: var(--text-secondary, #606266);
   line-height: 1.6;
   margin-bottom: 8px;
 }

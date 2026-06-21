@@ -48,27 +48,57 @@
           <h3>生成结果</h3>
           <div class="result-actions">
             <el-button type="primary" size="small" @click="copyResult">复制内容</el-button>
-            <el-button size="small" @click="downloadWord">下载Word</el-button>
           </div>
         </div>
       </template>
 
       <div class="result-content" v-html="renderMarkdown(result)"></div>
     </el-card>
+
+    <!-- 历史记录 -->
+    <el-card class="history-card">
+      <template #header>
+        <div class="result-header">
+          <h3>生成历史</h3>
+          <el-button size="small" @click="loadHistory">刷新</el-button>
+        </div>
+      </template>
+
+      <el-table :data="historyList" style="width: 100%" max-height="400">
+        <el-table-column label="类型" width="100">
+          <template #default="scope">
+            <el-tag :type="getTypeTag(scope.row.type)">{{ getTypeName(scope.row.type) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="inputText" label="输入内容" show-overflow-tooltip />
+        <el-table-column label="生成时间" width="160">
+          <template #default="scope">
+            {{ new Date(scope.row.createTime).toLocaleString('zh-CN') }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="100">
+          <template #default="scope">
+            <el-button type="primary" link @click="viewHistory(scope.row)">查看</el-button>
+            <el-button type="danger" link @click="deleteHistory(scope.row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { marked } from 'marked'
 import { ElMessage } from 'element-plus'
-import { streamResource } from '../api'
+import api, { generateResource, getResourceHistory } from '../api'
 
 const selectedType = ref('syllabus')
 const inputText = ref('')
 const result = ref('')
 const loading = ref(false)
 const studentId = ref('student_001')
+const historyList = ref([])
 
 const resourceTypes = [
   { value: 'syllabus', label: '教学大纲', icon: '📋', desc: '生成完整的课程教学大纲' },
@@ -104,30 +134,19 @@ async function generate() {
   result.value = ''
 
   try {
-    const url = streamResource(selectedType.value, inputText.value, studentId.value)
-    const eventSource = new EventSource(url)
-
-    eventSource.onmessage = (event) => {
-      if (event.data === '[DONE]') {
-        eventSource.close()
-        loading.value = false
-        return
-      }
-      result.value += event.data
-    }
-
-    eventSource.onerror = () => {
-      eventSource.close()
-      loading.value = false
-      if (!result.value) {
-        ElMessage.error('生成失败，请重试')
-      }
-    }
+    const res = await generateResource(selectedType.value, inputText.value, studentId.value)
+    result.value = res.data.content || res.data
+    loading.value = false
+    loadHistory()
   } catch (error) {
     loading.value = false
     ElMessage.error('生成失败：' + error.message)
   }
 }
+
+onMounted(() => {
+  loadHistory()
+})
 
 function clear() {
   inputText.value = ''
@@ -140,9 +159,35 @@ function copyResult() {
     .catch(() => ElMessage.error('复制失败'))
 }
 
-function downloadWord() {
-  // TODO: 实现Word下载
-  ElMessage.info('Word下载功能开发中')
+const typeNames = { syllabus: '教学大纲', ppt: 'PPT大纲', exercise: '练习题', mindmap: '思维导图', review: '复习提纲' }
+const typeTags = { syllabus: '', ppt: 'success', exercise: 'warning', mindmap: 'info', review: 'danger' }
+
+function getTypeName(type) { return typeNames[type] || type }
+function getTypeTag(type) { return typeTags[type] || '' }
+
+async function loadHistory() {
+  try {
+    const res = await getResourceHistory()
+    historyList.value = res.data
+  } catch (e) {
+    console.error('加载历史失败:', e)
+  }
+}
+
+function viewHistory(row) {
+  selectedType.value = row.type
+  inputText.value = row.inputText
+  result.value = row.outputText
+}
+
+async function deleteHistory(id) {
+  try {
+    await api.delete(`/resource/history/${id}`)
+    loadHistory()
+    ElMessage.success('已删除')
+  } catch (e) {
+    ElMessage.error('删除失败')
+  }
 }
 </script>
 
@@ -169,8 +214,8 @@ function downloadWord() {
 
 .type-item {
   padding: 20px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  background: var(--bg-hover, #f5f7fa);
+  border-radius: 10px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
@@ -178,13 +223,13 @@ function downloadWord() {
 }
 
 .type-item:hover {
-  background: #ecf5ff;
-  border-color: #409EFF;
+  background: #f9f0ff;
+  border-color: #722ed1;
 }
 
 .type-item.active {
-  background: #ecf5ff;
-  border-color: #409EFF;
+  background: #f9f0ff;
+  border-color: #722ed1;
 }
 
 .type-icon {
@@ -195,13 +240,13 @@ function downloadWord() {
 .type-name {
   font-size: 16px;
   font-weight: 500;
-  color: #303133;
+  color: var(--text-primary, #303133);
   margin-bottom: 4px;
 }
 
 .type-desc {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted, #909399);
 }
 
 .input-actions {
@@ -231,7 +276,7 @@ function downloadWord() {
 :deep(.result-content) h2,
 :deep(.result-content) h3 {
   margin: 16px 0 8px 0;
-  color: #409EFF;
+  color: #722ed1;
 }
 
 :deep(.result-content) p {

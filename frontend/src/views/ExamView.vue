@@ -4,7 +4,7 @@
     <el-row :gutter="20" class="stats-row">
       <el-col :span="6">
         <el-card shadow="hover" class="stat-card">
-          <div class="stat-icon" style="background: #409EFF">
+          <div class="stat-icon" style="background: #722ed1">
             <el-icon><Edit /></el-icon>
           </div>
           <div class="stat-info">
@@ -302,10 +302,10 @@ function renderRadarChart() {
         value: values,
         name: '掌握度',
         areaStyle: {
-          color: 'rgba(64, 158, 255, 0.2)'
+          color: 'rgba(114, 46, 209, 0.2)'
         },
         lineStyle: {
-          color: '#409EFF'
+          color: '#722ed1'
         }
       }]
     }]
@@ -432,12 +432,12 @@ onMounted(() => {
 .stat-value {
   font-size: 28px;
   font-weight: bold;
-  color: #303133;
+  color: var(--text-primary, #303133);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #909399;
+  color: var(--text-muted, #909399);
   margin-top: 4px;
 }
 
@@ -492,6 +492,7 @@ onMounted(() => {
 .weak-name {
   margin-bottom: 8px;
   font-weight: 500;
+  color: var(--text-primary, #303133);
 }
 
 .quick-actions {
@@ -510,7 +511,7 @@ onMounted(() => {
   max-height: 400px;
   overflow-y: auto;
   padding: 16px;
-  background: #f5f7fa;
+  background: var(--bg-hover, #f5f7fa);
   border-radius: 8px;
   margin-top: 16px;
 }
@@ -522,8 +523,8 @@ onMounted(() => {
 
 .wrong-item {
   padding: 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  background: var(--bg-hover, #f5f7fa);
+  border-radius: 10px;
   margin-bottom: 16px;
   border-left: 4px solid #F56C6C;
 }
@@ -536,13 +537,13 @@ onMounted(() => {
 }
 
 .wrong-tags {
-  color: #909399;
+  color: var(--text-muted, #909399);
   font-size: 13px;
 }
 
 .wrong-question {
   font-size: 16px;
-  color: #303133;
+  color: var(--text-primary, #303133);
   margin-bottom: 12px;
   line-height: 1.6;
 }
@@ -556,7 +557,7 @@ onMounted(() => {
 .your-answer .label,
 .correct-answer .label {
   font-weight: 500;
-  color: #606266;
+  color: var(--text-secondary, #606266);
 }
 
 .your-answer .wrong {

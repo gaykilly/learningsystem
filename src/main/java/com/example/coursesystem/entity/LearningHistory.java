@@ -20,6 +20,12 @@ public class LearningHistory {
     private String studentId;
 
     /**
+     * 会话ID
+     */
+    @Column(name = "session_id")
+    private String sessionId;
+
+    /**
      * 学习类型：chat/resource/quiz/path
      */
     @Column(name = "type")

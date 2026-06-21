@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
-  timeout: 60000
+  timeout: 300000
 })
 
 // 对话API - 流式输出
@@ -12,8 +12,8 @@ export function streamChat(message, studentId = 'default', agentType = 'tutor') 
 }
 
 // 对话API - 非流式
-export function sendMessage(message, studentId = 'default', agentType = 'tutor') {
-  return api.post('/chat/send', { message, studentId, agentType })
+export function sendMessage(message, studentId = 'default', agentType = 'tutor', sessionId = null) {
+  return api.post('/chat/send', { message, studentId, agentType, sessionId })
 }
 
 // 获取智能体列表
@@ -56,6 +56,29 @@ export function getPaths(studentId) {
 
 export function getActivePaths(studentId) {
   return api.get('/path/active', { params: { studentId } })
+}
+
+// 对话历史API
+export function getChatHistory(studentId = 'student_001') {
+  return api.get('/chat/history', { params: { studentId } })
+}
+
+// 会话API
+export function getSessions(studentId = 'student_001') {
+  return api.get('/chat/sessions', { params: { studentId } })
+}
+
+export function getSessionMessages(sessionId) {
+  return api.get(`/chat/session/${sessionId}/messages`)
+}
+
+export function deleteSession(sessionId) {
+  return api.delete(`/chat/session/${sessionId}`)
+}
+
+// 资源历史API
+export function getResourceHistory() {
+  return api.get('/resource/history')
 }
 
 export default api
